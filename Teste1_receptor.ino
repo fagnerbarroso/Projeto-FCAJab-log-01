@@ -2,15 +2,15 @@
 #include <PubSubClient.h>
 
 #define qtde165  1            //Registra o número de CIs 74HC165 cascateados
-#define nExtIn qtde165 * 8
+#define nExtIn qtde165 * 8    //Número de entradas do sistema
 #define TempoDeslocamento 50  //Registra o tempo de queverá ter o pulso para leitura e gravação, (milissegundos)
 
 // Declaração de variáveis globais
 const int clockIn         = 4;    //Pino 11 Clock 74HC595
 const int latchPin        = 2;    //Pino 12 Latch 74HC595
-const int dataIn          = 14;    //Pino 14 Data  74HC595
+const int dataIn          = 14;   //Pino 14 Data  74HC595
 
-int button_cmd[nExtIn] = {LOW};
+byte button_cmd[nExtIn] = {LOW};
 
 //WiFi
 const char* SSID = "...";                // SSID / nome da rede WiFi que deseja se conectar
@@ -31,26 +31,10 @@ void conectaWiFi();     //Faz conexão com WiFi
 void conectaMQTT();     //Faz conexão com Broker MQTT
 void recebePacote(char* topic, byte* payload, unsigned int length);
 
-//Envia informações aos LEDs
-void send_to_LEDs()
-{
-  digitalWrite(latchPin, LOW);      //começa a enviar dados
-
-  for(int i = 0; i < nExtIn; i++)
-  {
-    digitalWrite(clockIn, LOW);
-    digitalWrite(dataIn, button_cmd[i]);
-    delayMicroseconds(TempoDeslocamento);
-    digitalWrite(clockIn, HIGH);
-    digitalWrite(dataIn, LOW);
-  }
-  digitalWrite(latchPin, HIGH);
-}
-
 void setup() {
-    pinMode(dataIn, OUTPUT);
-    pinMode(clockIn, OUTPUT);
-    pinMode(latchPin, OUTPUT);
+  pinMode(dataIn, OUTPUT);
+  pinMode(clockIn, OUTPUT);
+  pinMode(latchPin, OUTPUT);
 
   Serial.begin(115200);
 
@@ -111,13 +95,31 @@ void conectaMQTT() {
     }
 }
 
+//Envia informações aos LEDs
+void send_to_LEDs()
+{
+  digitalWrite(latchPin, LOW);      //começa a enviar dados
+
+  for(int i = 0; i < nExtIn; i++)
+  {
+    digitalWrite(clockIn, LOW);
+    digitalWrite(dataIn, button_cmd[i]);
+    delayMicroseconds(TempoDeslocamento);
+    digitalWrite(clockIn, HIGH);
+    digitalWrite(dataIn, LOW);
+  }
+  digitalWrite(latchPin, HIGH);
+}
+
 void recebePacote(char* topic, byte* payload, unsigned int length) 
 {
-    //obtem a string do payload recebido
-    for(int i = 0; i < length; i++) 
-    {
-       button_cmd[i] = (int)payload[i];
-    }
+  //obtem a leitura do payload recebido
+  for(int i = 0; i < length; i++){
+    Serial.println(payload[i]); 
+  }
 
-    send_to_LEDs();
+  for(int ii = 0; ii < length; ii++){
+    button_cmd[ii] = payload[ii];
+  }
+  send_to_LEDs();
 }
