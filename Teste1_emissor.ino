@@ -1,4 +1,4 @@
-#include <WiFi.h> 
+#include <ESP8266WiFi.h> 
 #include <PubSubClient.h>
 
 // Definições de Labels
@@ -35,72 +35,16 @@ PubSubClient MQTT(wifiClient);        // Instancia o Cliente MQTT passando o obj
 void mantemConexoes();  //Garante que as conexoes com WiFi e MQTT Broker se mantenham ativas
 void conectaWiFi();     //Faz conexão com WiFi
 void conectaMQTT();     //Faz conexão com Broker MQTT
-void enviaValores();     //
-
-//Função para definir um rotina shift-in, lê os dados do 74HC165
-void read_shift_regs()
-{
-    int bitVal=0;
-    
-    digitalWrite(clockEnablePin, HIGH);
-    digitalWrite(ploadPin, LOW);
-    delayMicroseconds(TempoDeslocamento);
-    digitalWrite(ploadPin, HIGH);
-    digitalWrite(clockEnablePin, LOW);
-
-    // Efetua a leitura de um bit da saida serial do 74HC165
-    for(int i = 0; i < nExtIn; i++)
-    {
-        bitVal = digitalRead(dataPin);
-
-        button_cmd[i] = on_off_status(bitVal, button_cmd[i], i);
-
-        if(button_cmd[i] != button_cmd_old[i]){
-          boolean sent = MQTT.publish(TOPIC_PUBLISH, button_cmd, nExtIn, true);
-          if (sent == true){
-            Serial.println("Payload enviado.");
-            button_cmd_old[i] == button_cmd[i];
-          }
-          else {
-            Serial.println("Erro em envio de Payload.");
-          }
-        }
-
-        //Lança um pulso de clock e desloca o próximo bit
-        digitalWrite(clockPin, HIGH);
-        delayMicroseconds(TempoDeslocamento);
-        digitalWrite(clockPin, LOW);
-    }
-}
-
-//Verifica estado dos botões
-int on_off_status (int pinValues, int command, int i)
-{
-  
-  unsigned long x = millis() - time_stp[i];
-  
-  if(pinValues == 1){
-    if (x < 5000){
-      return command;
-    }
-    else{
-      command = !command;
-      time_stp[i] = millis();
-      delay(press_time);
-    }
-  }
-  return (byte)command;
-}
+//void enviaValores();     //
 
 void setup() {
-   //Inicializa e configura os pinos
     pinMode(ploadPin, OUTPUT);
     pinMode(clockEnablePin, OUTPUT);
     pinMode(clockPin, OUTPUT);
     pinMode(dataPin, INPUT);
 
     digitalWrite(clockPin, HIGH);
-    digitalWrite(ploadPin, HIGH);        
+    digitalWrite(ploadPin, HIGH); 
 
   Serial.begin(115200);
 
@@ -110,13 +54,9 @@ void setup() {
 
 void loop() {
   mantemConexoes();
+  //enviaValores();
+  read_shift_regs();
   MQTT.loop();
-
-    //Lê todos as portas externas
-    read_shift_regs(); 
-    
-    //Envia comando para a rede
-    //enviaValores();
 }
 
 void mantemConexoes() {
@@ -159,23 +99,64 @@ void conectaMQTT() {
         } 
         else {
             Serial.println("Noo foi possivel se conectar ao broker.");
-            Serial.println("Nova tentativa de conexao em 10s");
+            Serial.println("Nova tentatica de conexao em 10s");
             delay(10000);
         }
     }
 }
 
-/*void enviaValores(){
-  for (int i = 0; i < nExtIn; i++){
-    if(button_cmd[i] != button_cmd_old[i]){
-      boolean sent = MQTT.publish(TOPIC_PUBLISH, button_cmd, nExtIn, true);
-      if (sent == true){
-        Serial.println("Payload enviado.");
-        button_cmd_old[i] == button_cmd[i];
-      }
-      else {
-        Serial.println("Erro em envio de Payload.");
-      }
+//Função para definir um rotina shift-in, lê os dados do 74HC165
+void read_shift_regs()
+{
+    int bitVal=0;
+    
+    digitalWrite(clockEnablePin, HIGH);
+    digitalWrite(ploadPin, LOW);
+    delayMicroseconds(TempoDeslocamento);
+    digitalWrite(ploadPin, HIGH);
+    digitalWrite(clockEnablePin, LOW);
+
+    // Efetua a leitura de um bit da saida serial do 74HC165
+    for(int i = 0; i < nExtIn; i++)
+    {
+        bitVal = digitalRead(dataPin);
+
+        button_cmd[i] = on_off_status(bitVal, button_cmd[i], i);
+
+        if(button_cmd[i] != button_cmd_old[i]){
+          boolean sent = MQTT.publish(TOPIC_PUBLISH, button_cmd, nExtIn, true);
+          if (sent == true){
+            Serial.println("Payload enviado. LED ");
+            Serial.print(i);
+            button_cmd_old[i] == button_cmd[i];
+          }
+          else {
+            Serial.println("Erro em envio de Payload.");
+          }
+        }
+
+        //Lança um pulso de clock e desloca o próximo bit
+        digitalWrite(clockPin, HIGH);
+        delayMicroseconds(TempoDeslocamento);
+        digitalWrite(clockPin, LOW);
+    }
+}
+
+//Verifica estado dos botões
+int on_off_status (int pinValues, int command, int i)
+{
+  
+  unsigned long x = millis() - time_stp[i];
+  
+  if(pinValues == 1){
+    if (x < 5000){
+      return command;
+    }
+    else{
+      command = !command;
+      time_stp[i] = millis();
+      delay(press_time);
     }
   }
-} */
+  return (byte)command;
+}
