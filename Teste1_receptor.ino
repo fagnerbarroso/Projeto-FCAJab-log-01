@@ -1,3 +1,5 @@
+// Programado pra ser usado no ESP32
+
 #include <WiFi.h> 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
