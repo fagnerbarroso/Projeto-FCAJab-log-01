@@ -7,8 +7,6 @@
 //#include <MySQL_Cursor.h>           DB
 #include <PubSubClient.h>
 
-#include "ESP32_secrets.h"
-
 // Definições de Labels
 #define qtde165  1            //Registra o número de CIs 74HC165 cascateados
 #define nExtIn qtde165 * 8
