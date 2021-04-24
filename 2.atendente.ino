@@ -2,8 +2,6 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-#include "ESP32_secrets.h"
-
 #define qtde165  1            //Registra o número de CIs 74HC165 cascateados
 #define nExtIn qtde165 * 8    //Número de entradas do sistema
 #define TempoDeslocamento 50  //Registra o tempo de queverá ter o pulso para leitura e gravação, (milissegundos)
@@ -40,6 +38,8 @@ byte LED_off[nExtIn] = {LOW};
 unsigned long time_stp[nExtIn] = {0};
 
 //WiFi
+#define SECRET_SSID "FCA-Prod"
+#define SECRET_PASS "FCAprod@TCA!"
 char ssid[] = SECRET_SSID;        // your network SSID (name)
 char pass[] = SECRET_PASS;        // your network password
 int status = WL_IDLE_STATUS;      // status
