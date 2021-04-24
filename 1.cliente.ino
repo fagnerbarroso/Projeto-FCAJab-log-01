@@ -48,6 +48,8 @@ char *last_call_client[nExtIn];
 unsigned long time_stp[nExtIn] = {0};
 
 //WiFi
+#define SECRET_SSID "FCA-Prod"
+#define SECRET_PASS "FCAprod@TCA!"
 char ssid[] = SECRET_SSID;        // your network SSID (name)
 char pass[] = SECRET_PASS;        // your network password
 int status = WL_IDLE_STATUS;      // status
@@ -68,6 +70,8 @@ int BROKER_PORT = 1883;                         // Porta do Broker MQTT
 PubSubClient MQTT(wifiClient);        // Instancia o Cliente MQTT passando o objeto espClient
 
 // DECLARAÇÃO DE VARIÁVEIS PARA MySQL
+//#define SECRET_USERDB "fagnerbarroso"                                             DB
+//#define SECRET_PASSDB "myysql04"                                                  DB
 //IPAddress server_addr(85, 10, 205, 173);  // IP of the MySQL *server* here        DB
 //char user[] = SECRET_USERDB;              // MySQL user login username            DB
 //char password[] = SECRET_PASSDB;          // MySQL user login password            DB
